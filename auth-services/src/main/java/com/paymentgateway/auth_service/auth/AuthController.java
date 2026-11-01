@@ -27,7 +27,7 @@ public class AuthController {
             "role", request.role());
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
-        record LoginRequest(String email, String password) {}
+    record LoginRequest(String email, String password) {}
 
     @PostMapping("/login")
     ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request) {
