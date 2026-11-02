@@ -11,3 +11,4 @@ public class AuthServiceApplication {
 	}
 
 }
+//this is the main entry point for the Spring Boot application. It contains the main method that starts the application by invoking SpringApplication.run().	

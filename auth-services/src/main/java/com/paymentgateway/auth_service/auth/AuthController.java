@@ -44,3 +44,4 @@ public class AuthController {
         return ResponseEntity.ok(body);
     }
 }
+//this is a Spring Boot REST controller that handles user authentication requests. It provides endpoints for user registration and login, returning appropriate responses based on the request data.    

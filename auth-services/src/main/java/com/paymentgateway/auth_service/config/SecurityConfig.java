@@ -37,3 +37,4 @@ public class SecurityConfig {
         return source;
     }
 }
+//this is a security configuration class for a Spring Boot application. It defines the security settings for the application, including CORS (Cross-Origin Resource Sharing) configuration and request authorization rules. 
