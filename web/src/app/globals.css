@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+:root{
+  --ink:#2B0A10; --red:#D7263D; --red-d:#B01E31; --red-deep:#7F1224; --rose:#FFD1D6;
+  --bg:#FFFFFF; --line:#CFA0A8; --mute:#7A5A60; --err:#B3001B; --ok:#2BB673;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body),system-ui,sans-serif}
+h1,.logo{font-family:var(--head),sans-serif;letter-spacing:-.03em;margin:0}
+a{color:var(--red-d);font-weight:600}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.boot{padding:3rem;color:var(--mute)}
+
+/* logo */
+.logo{font-size:1.6rem;font-weight:800}.logo span{color:var(--rose)}
+
+/* auth layout: photo fills the whole left side */
+.auth{display:grid;grid-template-columns:1.05fr 1fr;min-height:100vh}
+.hero{position:relative;overflow:hidden;color:#fff;padding:3rem;display:flex;flex-direction:column;justify-content:space-between;background:#7F1224}
+.client-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 25%;z-index:0}
+.hero::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(127,18,36,.35) 0%,rgba(127,18,36,0) 30%,rgba(43,10,16,.88) 100%)}
+.hero .logo,.hero p{position:relative;z-index:2}
+.hero .logo{display:flex;align-items:center;font-size:1.5rem;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.hero .logo::before{content:"P";display:grid;place-items:center;width:3rem;height:3rem;margin-right:.8rem;border-radius:.9rem;background:#fff;color:var(--red);font-size:1.7rem;font-weight:800;text-shadow:none}
+.hero .logo span{color:#fff}
+.hero p{font-family:var(--head),sans-serif;font-size:clamp(2.2rem,4.2vw,3.6rem);font-weight:700;line-height:1.1;margin:0;max-width:14ch;text-shadow:0 2px 16px rgba(0,0,0,.4)}
+.hero em{font-style:normal;color:var(--rose)}
+
+/* form */
+.auth form{width:100%;max-width:440px;margin:0 auto;padding:3rem 1.5rem;display:flex;flex-direction:column;gap:1rem;justify-content:center}
+.auth h1{font-size:2rem}.sub{margin:-.5rem 0 .5rem;color:var(--mute)}
+.field{display:flex;flex-direction:column;gap:.3rem;font-weight:500;font-size:.95rem}
+input,select{font:inherit;width:100%;padding:.7rem .85rem;border:2px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+input:focus,select:focus{outline:none;border-color:var(--red)}
+input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--err);box-shadow:0 0 0 3px var(--rose)}
+.pw{position:relative}.pw input{padding-right:4.5rem}
+.toggle{position:absolute;right:.4rem;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--red-d);font:inherit;font-weight:600;cursor:pointer;padding:.4rem .6rem}
+.field-err{color:var(--err);font-weight:500}
+.form-err{margin:0;padding:.7rem .9rem;border-radius:10px;background:#FFE9EC;color:var(--err);font-weight:500}
+.btn{font:inherit;font-weight:700;background:var(--red);color:#fff;border:0;border-radius:10px;padding:.8rem 1.2rem;cursor:pointer;transition:transform .15s,background .15s}
+.btn:hover{background:var(--red-d);transform:translateY(-1px)}.btn:disabled{opacity:.6;cursor:wait;transform:none}
+.swap{text-align:center;color:var(--mute);margin:.25rem 0 0}
+
+/* temporary welcome page */
+.welcome{max-width:560px;margin:12vh auto;padding:2rem;display:flex;flex-direction:column;gap:1rem;align-items:flex-start}
+.welcome .logo{color:var(--red)}.welcome .logo span{color:var(--ink)}.welcome h1{font-size:2.4rem}.welcome p{margin:0}
+
+@media(max-width:800px){.auth{grid-template-columns:1fr}.hero{padding:1.5rem;gap:1.5rem;min-height:340px}.hero p{font-size:1.8rem}}
+
+/* pop-up messages */
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:50;width:min(440px,calc(100vw - 2rem));
+  display:flex;gap:.75rem;align-items:flex-start;justify-content:space-between;padding:.9rem 1rem;border-radius:12px;font-weight:500;
+  box-shadow:0 12px 32px #2B0A1040;animation:drop .25s ease-out}
+.toast.error{background:#FFE9EC;color:#8A0016;border:2px solid var(--red)}
+.toast.success{background:#DDF7EA;color:#0B5B36;border:2px solid var(--ok)}
+.toast button{background:none;border:0;font-size:1.4rem;line-height:1;cursor:pointer;color:inherit;padding:0 .25rem}
+@keyframes drop{from{opacity:0;transform:translate(-50%,-12px)}to{opacity:1;transform:translate(-50%,0)}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
