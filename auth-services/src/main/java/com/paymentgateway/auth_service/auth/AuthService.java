@@ -14,12 +14,15 @@ import com.paymentgateway.auth_service.user.UserRepository;
 @Service
 public class AuthService {
 
-    private final UserRepository userRepository;
+        private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                       JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public User register(RegisterRequest request) {
@@ -45,6 +48,20 @@ public class AuthService {
         User user = new User(email, phone, passwordHash,
                 request.firstName().trim(), request.lastName().trim(), request.role());
         return userRepository.save(user);
+    }
+        public LoginResult login(LoginRequest request) {
+        String email = request.email().trim().toLowerCase(Locale.ROOT);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS"));
+
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS");
+        }
+
+        String token = jwtService.createToken(user);
+        return new LoginResult(token, user.getRole().name(),
+                user.getFirstName(), JwtService.EXPIRES_IN_SECONDS);
     }
 }
 //this is a Spring service class that handles user registration. It validates the registration request, checks for existing users, hashes the password, and saves the new user to the database. It also ensures that users cannot register as admins through the public form.       

@@ -1,7 +1,7 @@
 package com.paymentgateway.auth_service.auth;
 
 import java.util.Map;
-import java.util.UUID;
+
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,21 +32,11 @@ public class AuthController {
             "role", user.getRole().name());
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
-    record LoginRequest(String email, String password) {}
+    
 
-    @PostMapping("/login")
-    ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request) {
-        // FAKE for now: any password works, except the word "wrong"
-        if ("wrong".equals(request.password())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", "INVALID_CREDENTIALS"));
-        }
-        Map<String, Object> body = Map.of(
-            "token", "fake-jwt-token",
-            "role", "CUSTOMER",
-            "firstName", "Jane",
-            "expiresInSeconds", 3600);
-        return ResponseEntity.ok(body);
+        @PostMapping("/login")
+    ResponseEntity<LoginResult> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 }
 //this is a Spring Boot REST controller that handles user authentication requests. It provides endpoints for user registration and login, returning appropriate responses based on the request data.    
