@@ -109,15 +109,22 @@ export default function AuthForm({ mode }) {
   }
 
   return (
-    <div className="auth">
+    <div className={isRegister ? "signup-page" : "auth"}>
       <Toast toast={toast} onClose={close} />
+      {!isRegister && (
       <section className="hero">
         <div className="logo">Pesa<span>Pay</span></div>
         {photoOk && (
           <Image className="client-photo" src="/client.jpg" alt="A happy PesaPay customer" width={420} height={525} priority onError={() => setPhotoOk(false)} />
         )}
-        <p>Pay. Get paid. <em>Settle.</em></p>
+        <div style={{ position: "relative", zIndex: 2 }}>
+  <p>Payments that <em>just work.</em></p>
+  <span style={{ display: "block", marginTop: ".75rem", maxWidth: "34ch", opacity: .9 }}>
+    Top up, pay merchants and get settled, all in one wallet.
+  </span>
+</div>
       </section>
+      )}
 
       <form onSubmit={submit} noValidate>
         <h1>{isRegister ? "Create your account" : "Sign in"}</h1>

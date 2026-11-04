@@ -5,8 +5,14 @@
   --bg:#FFFFFF; --line:#CFA0A8; --mute:#7A5A60; --err:#B3001B; --ok:#2BB673;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body),system-ui,sans-serif}
-h1,.logo{font-family:var(--head),sans-serif;letter-spacing:-.03em;margin:0}
+body{margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font:16px/1.5 var(--body),system-ui,sans-serif}
+
+h1,.logo{font-family:var(--head),sans-serif;
+  letter-spacing:-.03em;
+  margin:0}
 a{color:var(--red-d);font-weight:600}
 :focus-visible{outline:3px solid var(--red);outline-offset:2px}
 .boot{padding:3rem;color:var(--mute)}
@@ -56,4 +62,15 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--err);b
 .toast button{background:none;border:0;font-size:1.4rem;line-height:1;cursor:pointer;color:inherit;padding:0 .25rem}
 @keyframes drop{from{opacity:0;transform:translate(-50%,-12px)}to{opacity:1;transform:translate(-50%,0)}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* first name + last name side by side */
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+
+/* sign up page: full-page background photo with a white card on top */
+.signup-page{min-height:100vh;display:grid;place-items:center;padding:2rem 1rem;background:linear-gradient(rgba(43,10,16,.55),rgba(43,10,16,.55)),url(/signup.jpg) center/cover fixed #2B0A10}
+.signup-page form{width:min(640px,100%);background:#fff;border-radius:24px;padding:2.5rem;display:flex;flex-direction:column;gap:1rem;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.signup-page h1{font-size:2rem}
+.signup-page .logo{display:flex;align-items:center;font-size:1.5rem;color:var(--ink);margin-bottom:.75rem}
+.signup-page .logo span{color:var(--red)}
+.signup-page .logo::before{content:"P";display:grid;place-items:center;width:3rem;height:3rem;margin-right:.8rem;border-radius:.9rem;background:#fff;border:1px solid var(--line);color:var(--red);font-size:1.7rem;font-weight:800}
+@media(max-width:560px){.signup-page form{padding:1.5rem}}
