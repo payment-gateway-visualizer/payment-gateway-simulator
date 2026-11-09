@@ -2,7 +2,6 @@ package com.paymentgateway.auth_service.auth;
 
 import java.util.Map;
 
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,23 +19,20 @@ public class AuthController {
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
-                         
 
-      @PostMapping("/register")
-    ResponseEntity<Map<String, Object>> register(@Valid @RequestBody RegisterRequest request) {
+    @PostMapping("/register")
+    ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
         User user = authService.register(request);
-        Map<String, Object> body = Map.of(
-            "id", user.getId().toString(),
-            "email", user.getEmail(),
-            "firstName", user.getFirstName(),
-            "role", user.getRole().name());
-        return ResponseEntity.status(HttpStatus.CREATED).body(body);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(RegisterResponse.from(user));
     }
-    
 
-        @PostMapping("/login")
+    @PostMapping("/login")
     ResponseEntity<LoginResult> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 }
-//this is a Spring Boot REST controller that handles user authentication requests. It provides endpoints for user registration and login, returning appropriate responses based on the request data.    
+// this is a Spring Boot REST controller that handles user authentication
+// requests. It provides endpoints for user registration and login, returning
+// appropriate responses based on the request data.
