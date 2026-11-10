@@ -1,113 +1,65 @@
-// Everything the app needs to communicate with the backend lives here.
 
 const BASE =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
 
-// Possible user roles.
-export type UserRole = "CUSTOMER" | "MERCHANT" | "ADMIN";
+const MESSAGES: Record<string, string> = {
+  EMAIL_TAKEN: "That email is already registered. Try signing in.",
+  PHONE_TAKEN: "That phone number is already in use.",
+  VALIDATION_FAILED: "Some details aren't valid. Please check and try again.",
+  INVALID_CREDENTIALS: "Wrong email or password.",
+};
 
-// Information stored about the logged-in user.
 export interface UserSession {
   token: string;
   user: {
-    role: UserRole | string;
+    role: string;
     name?: string;
   };
   expiresAt: number;
 }
 
-// Structure of an API error response.
-interface ApiErrorResponse {
-  error?: string;
-  message?: string;
-}
-
-// Options accepted by the API function.
-interface ApiOptions {
-  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-  body?: unknown;
-}
-
-// Backend error codes and their friendly messages.
-const MESSAGES: Record<string, string> = {
-  EMAIL_TAKEN: "That email is already registered. Try signing in.",
-  PHONE_TAKEN: "That phone number is already in use.",
-  VALIDATION_FAILED:
-    "Some details aren't valid. Please check and try again.",
-  INVALID_CREDENTIALS: "Wrong email or password.",
-};
-
-// Session management.
-// This uses browser localStorage to keep the JWT between page refreshes.
 export const session = {
   get(): UserSession | null {
-    // localStorage is only available in the browser.
-    if (typeof window === "undefined") {
-      return null;
-    }
-
     try {
-      const savedSession = localStorage.getItem("pp_session");
+      const stored = localStorage.getItem("pp_session");
 
-      if (!savedSession) {
-        return null;
-      }
+      if (!stored) return null;
 
-      const parsed: unknown = JSON.parse(savedSession);
+      const saved = JSON.parse(stored) as UserSession;
 
-      if (
-        typeof parsed !== "object" ||
-        parsed === null ||
-        !("token" in parsed) ||
-        !("expiresAt" in parsed) ||
-        typeof parsed.token !== "string" ||
-        typeof parsed.expiresAt !== "number"
-      ) {
+      if (saved.expiresAt && Date.now() > saved.expiresAt) {
         localStorage.removeItem("pp_session");
         return null;
       }
 
-      const userSession = parsed as UserSession;
-
-      // Check whether the JWT session has expired.
-      if (Date.now() >= userSession.expiresAt) {
-        localStorage.removeItem("pp_session");
-        return null;
-      }
-
-      return userSession;
+      return saved;
     } catch {
       return null;
     }
   },
 
-  set(userSession: UserSession): void {
-    if (typeof window !== "undefined") {
-      localStorage.setItem(
-        "pp_session",
-        JSON.stringify(userSession)
-      );
-    }
+  set(value: UserSession): void {
+    localStorage.setItem("pp_session", JSON.stringify(value));
   },
 
   clear(): void {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("pp_session");
-    }
+    localStorage.removeItem("pp_session");
   },
 };
 
-// Determine where a user should go after logging in.
-export function homeFor(role?: string | null): string {
-  return "/" + (role || "login").toLowerCase();
+export const homeFor = (role?: string | null): string =>
+  "/" + (role || "login").toLowerCase();
+
+interface ApiOptions {
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  body?: unknown;
 }
 
-// A reusable function for communicating with the backend.
 export async function api<T = unknown>(
   path: string,
   { method = "GET", body }: ApiOptions = {}
 ): Promise<T> {
-  const currentSession = session.get();
+  const savedSession = session.get();
 
   let response: Response;
 
@@ -116,8 +68,8 @@ export async function api<T = unknown>(
       method,
       headers: {
         "Content-Type": "application/json",
-        ...(currentSession
-          ? { Authorization: `Bearer ${currentSession.token}` }
+        ...(savedSession
+          ? { Authorization: `Bearer ${savedSession.token}` }
           : {}),
       },
       body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -128,17 +80,20 @@ export async function api<T = unknown>(
     );
   }
 
-  const data: unknown = await response.json().catch(() => ({}));
+  const data: Record<string, unknown> = await response
+    .json()
+    .catch(() => ({}));
 
   if (!response.ok) {
-    const errorData = data as ApiErrorResponse;
+    const errorCode =
+      typeof data.error === "string" ? data.error : "";
 
     const message =
-      (errorData.error && MESSAGES[errorData.error]) ||
-      errorData.message ||
-      "Something went wrong. Try again.";
+      typeof data.message === "string" ? data.message : "";
 
-    throw new Error(message);
+    throw new Error(
+      MESSAGES[errorCode] || message || "Something went wrong. Try again."
+    );
   }
 
   return data as T;
