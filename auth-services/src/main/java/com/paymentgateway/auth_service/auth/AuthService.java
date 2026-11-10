@@ -14,12 +14,12 @@ import com.paymentgateway.auth_service.user.UserRepository;
 @Service
 public class AuthService {
 
-        private final UserRepository userRepository;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-                       JwtService jwtService) {
+            JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
@@ -49,7 +49,8 @@ public class AuthService {
                 request.firstName().trim(), request.lastName().trim(), request.role());
         return userRepository.save(user);
     }
-        public LoginResult login(LoginRequest request) {
+
+    public LoginResult login(LoginRequest request) {
         String email = request.email().trim().toLowerCase(Locale.ROOT);
 
         User user = userRepository.findByEmail(email)
@@ -64,4 +65,7 @@ public class AuthService {
                 user.getFirstName(), JwtService.EXPIRES_IN_SECONDS);
     }
 }
-//this is a Spring service class that handles user registration. It validates the registration request, checks for existing users, hashes the password, and saves the new user to the database. It also ensures that users cannot register as admins through the public form.       
+// this is a Spring service class that handles user registration. It validates
+// the registration request, checks for existing users, hashes the password, and
+// saves the new user to the database. It also ensures that users cannot
+// register as admins through the public form.
