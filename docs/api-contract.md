@@ -72,3 +72,22 @@ else if (res.status === 409 && data.error === "PHONE_TAKEN") { /* phone message 
 else if (res.status === 400) { /* check details message */ }
 else { /* generic error message */ }
 ```
+
+### GET /api/v1/auth/me
+
+**What it does:** Shows who the token belongs to. It reads the user's id and role from the token that was sent.
+
+**Who can call it:** any logged-in user (customer, merchant or admin).
+
+**What to send:** the token in the header: `Authorization: Bearer <token>`. No body.
+
+**What you get back (200):**
+
+```json
+{ "id": "2b297609-86db-4e3b-9b96-cc596ee43cbb", "role": "ADMIN" }
+```
+
+**What can go wrong:**
+- 401: no token, a changed token, or an expired token.
+
+**Why it exists:** to check that the token checking works, and so the website can confirm someone is still logged in and know their role.
