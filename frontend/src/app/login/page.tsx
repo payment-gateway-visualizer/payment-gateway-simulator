@@ -17,7 +17,7 @@ interface LoginValues {
   password: string;
 }
 
-// Expected response from the Spring Boot login endpoint.
+
 interface LoginResponse {
   token: string;
   role: string;
@@ -55,7 +55,7 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [photoOk, setPhotoOk] = useState(true);
 
-  // Display a registration success message after returning to login.
+ 
   useEffect(() => {
     const message = sessionStorage.getItem("pp_flash");
 
@@ -132,7 +132,7 @@ export default function LoginPage() {
 
       const role = response.role.toLowerCase();
 
-      // Save the JWT session in the browser.
+      
       session.set({
         token: response.token,
         user: {
@@ -162,7 +162,7 @@ export default function LoginPage() {
     <main className="grid min-h-screen grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
       <Toast toast={toast} onClose={() => setToast(null)} />
 
-      {/* Left promotional section */}
+    
       <section className="relative flex min-h-[340px] flex-col justify-between overflow-hidden bg-[#7F1224] p-8 text-white sm:p-12 lg:min-h-screen">
         {photoOk && (
           <Image
@@ -193,7 +193,7 @@ export default function LoginPage() {
         </div>
       </section>
 
-      {/* Login form */}
+      
       <section className="flex min-h-[500px] items-center justify-center bg-white px-6 py-12 text-[#2B0A10]">
         <form
           onSubmit={handleSubmit}
@@ -210,7 +210,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Email */}
+        
           <label className="flex flex-col gap-2 text-sm font-semibold">
             Email
 
@@ -237,7 +237,7 @@ export default function LoginPage() {
             )}
           </label>
 
-          {/* Password */}
+          
           <label className="flex flex-col gap-2 text-sm font-semibold">
             Password
 
@@ -275,7 +275,7 @@ export default function LoginPage() {
             )}
           </label>
 
-          {/* Submit */}
+          
           <button
             type="submit"
             disabled={busy}

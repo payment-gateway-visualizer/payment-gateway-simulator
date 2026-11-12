@@ -3,16 +3,13 @@
 import { useRouter } from "next/navigation";
 import Protected from "@/components/Protected";
 
-// Where Log out sends the user. Change this if your login page lives at another path.
+
 const LOGIN_PATH = "/login";
 
-/* -------------------------------------------------------------------------- */
-/*  Helpers                                                                   */
-/* -------------------------------------------------------------------------- */
+
 
 const text = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 
-/** Reads the first non-empty text field from the logged-in user. */
 function pick(user: unknown, keys: string[]): string {
   if (user && typeof user === "object") {
     const u = user as Record<string, unknown>;
@@ -32,7 +29,7 @@ function getDisplayName(user: unknown): string {
   return email ? email.split("@")[0] : "Merchant";
 }
 
-/** The account details shown on the page. Email and phone appear only if the user has them. */
+/** The account details*/
 function getDetails(user: unknown, name: string): [string, string][] {
   const rows: [string, string][] = [
     ["Business name", name],
@@ -45,9 +42,7 @@ function getDetails(user: unknown, name: string): [string, string][] {
   return rows;
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Small pieces                                                              */
-/* -------------------------------------------------------------------------- */
+
 
 function StatCard({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
@@ -68,14 +63,12 @@ function EmptyState({ title, message }: { title: string; message: string }) {
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Page                                                                      */
-/* -------------------------------------------------------------------------- */
+
 
 function MerchantView({ name, details }: { name: string; details: [string, string][] }) {
   const router = useRouter();
 
-  // Sessionless: Log out only goes to the login page.
+ 
   const onLogout = () => router.replace(LOGIN_PATH);
 
   const monthLabel = new Date().toLocaleDateString("en-GB", { month: "short", year: "numeric" });
@@ -108,7 +101,7 @@ function MerchantView({ name, details }: { name: string; details: [string, strin
           <h1 className="text-3xl font-extrabold tracking-tight">Dashboard</h1>
 
           
-          {/* Summary */}
+        
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard label="Received this month" value="KES 0.00" hint={`${monthLabel} so far`} />
             <StatCard label="Payments received" value="0" hint="Paid requests" />
@@ -116,7 +109,7 @@ function MerchantView({ name, details }: { name: string; details: [string, strin
             <StatCard label="Rejected or expired" value="0" hint="Did not get paid" />
           </div>
 
-          {/* Balance */}
+        
           <div className="mt-8 rounded-[2.5rem] bg-gradient-to-br from-[#D3213C] via-[#B31C35] to-[#7F1228] p-5 text-white sm:p-8">
             <p className="text-lg font-medium text-white/85">Merchant balance</p>
             <p className="mt-2 break-words text-4xl font-extrabold tracking-tight sm:text-6xl">KES 0.00</p>
@@ -132,7 +125,7 @@ function MerchantView({ name, details }: { name: string; details: [string, strin
             <p className="mt-2 text-[15px] text-white/80">Payment requests are not available yet.</p>
           </div>
 
-          {/* Account details */}
+        
           <h2 className="mt-8 text-2xl font-extrabold tracking-tight">Account details</h2>
           <dl className="mt-4 divide-y divide-[#F1E6E8] rounded-[2rem] border border-[#EBDDE0]">
             {details.map(([label, value]) => (
@@ -143,14 +136,14 @@ function MerchantView({ name, details }: { name: string; details: [string, strin
             ))}
           </dl>
 
-          {/* Awaiting payment */}
+          
           <h2 className="mt-8 text-2xl font-extrabold tracking-tight">Awaiting payment</h2>
           <EmptyState
             title="No requests awaiting payment"
             message="Requests you send will show up here until the customer responds."
           />
 
-          {/* History */}
+        
           <h2 className="mt-8 text-2xl font-extrabold tracking-tight">Transaction history</h2>
           <EmptyState
             title="No transactions yet"
@@ -162,9 +155,7 @@ function MerchantView({ name, details }: { name: string; details: [string, strin
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Next.js page                                                              */
-/* -------------------------------------------------------------------------- */
+
 
 export default function MerchantPage() {
   return (

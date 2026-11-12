@@ -3,12 +3,10 @@
 import { useRouter } from "next/navigation";
 import Protected from "@/components/Protected";
 
-// Where Log out sends the user. Change this if your login page lives at another path.
+
 const LOGIN_PATH = "/login";
 
-/* -------------------------------------------------------------------------- */
-/*  Helpers                                                                   */
-/* -------------------------------------------------------------------------- */
+
 
 const text = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 
@@ -32,7 +30,7 @@ function getDisplayName(user: unknown): string {
   return email ? email.split("@")[0] : "Customer";
 }
 
-/** The account details shown on the page. Email and phone appear only if the user has them. */
+/** The account details  */
 function getDetails(user: unknown, name: string): [string, string][] {
   const rows: [string, string][] = [
     ["Name", name],
@@ -45,9 +43,7 @@ function getDetails(user: unknown, name: string): [string, string][] {
   return rows;
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Small pieces                                                              */
-/* -------------------------------------------------------------------------- */
+
 
 function StatCard({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
@@ -68,14 +64,11 @@ function EmptyState({ title, message }: { title: string; message: string }) {
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Page                                                                      */
-/* -------------------------------------------------------------------------- */
 
 function CustomerView({ name, details }: { name: string; details: [string, string][] }) {
   const router = useRouter();
 
-  // Sessionless: Log out only goes to the login page.
+ 
   const onLogout = () => router.replace(LOGIN_PATH);
 
   const monthLabel = new Date().toLocaleDateString("en-GB", { month: "short", year: "numeric" });
@@ -108,7 +101,7 @@ function CustomerView({ name, details }: { name: string; details: [string, strin
           <h1 className="text-3xl font-extrabold tracking-tight">Dashboard</h1>
 
           
-          {/* Summary */}
+        
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard label="Spent this month" value="KES 0.00" hint={`${monthLabel} so far`} />
             <StatCard label="Payments made" value="0" hint="Successful payments" />
@@ -116,7 +109,7 @@ function CustomerView({ name, details }: { name: string; details: [string, strin
             <StatCard label="Failed or rejected" value="0" hint="Did not go through" />
           </div>
 
-          {/* Wallet */}
+        
           <div className="mt-8 rounded-[2.5rem] bg-gradient-to-br from-[#D3213C] via-[#B31C35] to-[#7F1228] p-5 text-white sm:p-8">
             <p className="text-lg font-medium text-white/85">Wallet balance</p>
             <p className="mt-2 break-words text-4xl font-extrabold tracking-tight sm:text-6xl">KES 0.00</p>
@@ -143,14 +136,14 @@ function CustomerView({ name, details }: { name: string; details: [string, strin
             ))}
           </dl>
 
-          {/* Pending payments */}
+        
           <h2 className="mt-8 text-2xl font-extrabold tracking-tight">Pending payments</h2>
           <EmptyState
             title="No pending payments"
             message="When a merchant sends you a payment request, it will show up here."
           />
 
-          {/* History */}
+          
           <h2 className="mt-8 text-2xl font-extrabold tracking-tight">Transaction history</h2>
           <EmptyState title="No transactions yet" message="Your payments and top-ups will appear here." />
         </main>
@@ -159,9 +152,7 @@ function CustomerView({ name, details }: { name: string; details: [string, strin
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Next.js page                                                              */
-/* -------------------------------------------------------------------------- */
+
 
 export default function CustomerPage() {
   return (
