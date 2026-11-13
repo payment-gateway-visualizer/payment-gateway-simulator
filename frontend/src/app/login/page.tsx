@@ -126,15 +126,13 @@ export default function LoginPage() {
         }
       );
 
-      if (!response.token || !response.role) {
+            if (!response.role) {
         throw new Error("Unexpected login response from the server.");
       }
 
       const role = response.role.toLowerCase();
 
-      
       session.set({
-        token: response.token,
         user: {
           role,
           name: response.firstName,
@@ -142,7 +140,6 @@ export default function LoginPage() {
         expiresAt:
           Date.now() + (response.expiresInSeconds || 3600) * 1000,
       });
-
       // Navigate to the appropriate dashboard.
       router.replace(homeFor(role));
     } catch (error) {
