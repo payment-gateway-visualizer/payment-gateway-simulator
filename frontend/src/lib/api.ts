@@ -1,4 +1,3 @@
-
 const BASE =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
 
@@ -9,8 +8,9 @@ const MESSAGES: Record<string, string> = {
   INVALID_CREDENTIALS: "Wrong email or password.",
 };
 
+// The login token now lives in an HttpOnly cookie that JavaScript cannot read.
+// This stores only non-secret display info.
 export interface UserSession {
-  token: string;
   user: {
     role: string;
     name?: string;
@@ -42,8 +42,14 @@ export const session = {
     localStorage.setItem("pp_session", JSON.stringify(value));
   },
 
+  // Also asks the server to expire the cookie, so logout really logs out.
   clear(): void {
     localStorage.removeItem("pp_session");
+    fetch(BASE + "/api/v1/auth/logout", {
+      method: "POST",
+      credentials: "include",
+      keepalive: true,
+    }).catch(() => {});
   },
 };
 
@@ -59,19 +65,13 @@ export async function api<T = unknown>(
   path: string,
   { method = "GET", body }: ApiOptions = {}
 ): Promise<T> {
-  const savedSession = session.get();
-
   let response: Response;
 
   try {
     response = await fetch(BASE + path, {
       method,
-      headers: {
-        "Content-Type": "application/json",
-        ...(savedSession
-          ? { Authorization: `Bearer ${savedSession.token}` }
-          : {}),
-      },
+      credentials: "include", // browser attaches the pp_token cookie
+      headers: { "Content-Type": "application/json" },
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch {
@@ -98,4 +98,3 @@ export async function api<T = unknown>(
 
   return data as T;
 }
-
