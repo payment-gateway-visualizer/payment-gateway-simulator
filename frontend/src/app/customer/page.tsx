@@ -6,11 +6,9 @@ import Protected from "@/components/Protected";
 
 const LOGIN_PATH = "/login";
 
-
-
 const text = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 
-/** Reads the first non-empty text field from the logged-in user. */
+
 function pick(user: unknown, keys: string[]): string {
   if (user && typeof user === "object") {
     const u = user as Record<string, unknown>;
@@ -42,8 +40,6 @@ function getDetails(user: unknown, name: string): [string, string][] {
   if (phone) rows.push(["Phone", phone]);
   return rows;
 }
-
-
 
 function StatCard({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
@@ -151,8 +147,6 @@ function CustomerView({ name, details }: { name: string; details: [string, strin
     </div>
   );
 }
-
-
 
 export default function CustomerPage() {
   return (

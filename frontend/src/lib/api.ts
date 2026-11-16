@@ -8,8 +8,7 @@ const MESSAGES: Record<string, string> = {
   INVALID_CREDENTIALS: "Wrong email or password.",
 };
 
-// The login token now lives in an HttpOnly cookie that JavaScript cannot read.
-// This stores only non-secret display info.
+
 export interface UserSession {
   user: {
     role: string;
@@ -42,7 +41,7 @@ export const session = {
     localStorage.setItem("pp_session", JSON.stringify(value));
   },
 
-  // Also asks the server to expire the cookie, so logout really logs out.
+  
   clear(): void {
     localStorage.removeItem("pp_session");
     fetch(BASE + "/api/v1/auth/logout", {
@@ -70,7 +69,7 @@ export async function api<T = unknown>(
   try {
     response = await fetch(BASE + path, {
       method,
-      credentials: "include", // browser attaches the pp_token cookie
+      credentials: "include", 
       headers: { "Content-Type": "application/json" },
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });

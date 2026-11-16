@@ -11,7 +11,7 @@ import * as yup from "yup";
 import { api, session, homeFor } from "@/lib/api";
 import Toast, { type ToastMessage } from "@/components/Toast";
 
-// The login form only needs email and password.
+
 interface LoginValues {
   email: string;
   password: string;
@@ -114,7 +114,7 @@ export default function LoginPage() {
     setBusy(true);
 
     try {
-      // Send login details to the Spring Boot backend.
+      
       const response = await api<LoginResponse>(
         "/api/v1/auth/login",
         {
@@ -140,7 +140,7 @@ export default function LoginPage() {
         expiresAt:
           Date.now() + (response.expiresInSeconds || 3600) * 1000,
       });
-      // Navigate to the appropriate dashboard.
+      
       router.replace(homeFor(role));
     } catch (error) {
       setToast({

@@ -6,8 +6,6 @@ import Protected from "@/components/Protected";
 
 const LOGIN_PATH = "/login";
 
-
-
 const text = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 
 function pick(user: unknown, keys: string[]): string {
@@ -29,7 +27,7 @@ function getDisplayName(user: unknown): string {
   return email ? email.split("@")[0] : "Merchant";
 }
 
-/** The account details*/
+
 function getDetails(user: unknown, name: string): [string, string][] {
   const rows: [string, string][] = [
     ["Business name", name],
