@@ -1,22 +1,19 @@
-
-
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useFormik } from "formik";
 import * as yup from "yup";
 
-import { api, session, homeFor } from "@/lib/api";
+import { api, session, homeFor, setToken } from "@/lib/api";
 import Toast, { type ToastMessage } from "@/components/Toast";
-
 
 interface LoginValues {
   email: string;
   password: string;
 }
-
 
 interface LoginResponse {
   token: string;
@@ -25,7 +22,13 @@ interface LoginResponse {
   expiresInSeconds?: number;
 }
 
-// Yup validation rules.
+const initialValues: LoginValues = {
+  email: "",
+  password: "",
+};
+
+// Login only checks that the fields are filled in. The password strength
+// rules belong on the register page, not here.
 const loginSchema: yup.ObjectSchema<LoginValues> = yup.object({
   email: yup
     .string()
@@ -33,29 +36,16 @@ const loginSchema: yup.ObjectSchema<LoginValues> = yup.object({
     .email("Enter a valid email address")
     .required("Email is required"),
 
-  password: yup
-    .string()
-    .required("Password is required"),
+  password: yup.string().required("Password is required"),
 });
 
 export default function LoginPage() {
   const router = useRouter();
 
-  const [form, setForm] = useState<LoginValues>({
-    email: "",
-    password: "",
-  });
-
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof LoginValues, string>>
-  >({});
-
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [photoOk, setPhotoOk] = useState(true);
 
- 
   useEffect(() => {
     const message = sessionStorage.getItem("pp_flash");
 
@@ -65,101 +55,61 @@ export default function LoginPage() {
     }
   }, []);
 
-  function updateField(field: keyof LoginValues, value: string) {
-    setForm((previous) => ({
-      ...previous,
-      [field]: value,
-    }));
-
-    setErrors((previous) => ({
-      ...previous,
-      [field]: undefined,
-    }));
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    setErrors({});
-
-    // Validate the form using Yup.
-    try {
-      await loginSchema.validate(form, { abortEarly: false });
-    } catch (error) {
-      if (error instanceof yup.ValidationError) {
-        const fieldErrors: Partial<
-          Record<keyof LoginValues, string>
-        > = {};
-
-        error.inner.forEach((item) => {
-          if (
-            item.path &&
-            item.path in form &&
-            !fieldErrors[item.path as keyof LoginValues]
-          ) {
-            fieldErrors[item.path as keyof LoginValues] = item.message;
-          }
+  const formik = useFormik<LoginValues>({
+    initialValues,
+    validationSchema: loginSchema,
+    validateOnChange: true,
+    validateOnBlur: true,
+    onSubmit: async (values) => {
+      try {
+        const response = await api<LoginResponse>("/api/v1/auth/login", {
+          method: "POST",
+          auth: false,
+          body: {
+            email: values.email.trim(),
+            password: values.password,
+          },
         });
 
-        setErrors(fieldErrors);
+        if (!response.role || !response.token) {
+          throw new Error("Unexpected login response from the server.");
+        }
+
+        const role = response.role.toLowerCase();
+
+        setToken(response.token);
+
+        session.set({
+          user: {
+            role,
+            name: response.firstName,
+          },
+          expiresAt:
+            Date.now() + (response.expiresInSeconds || 3600) * 1000,
+        });
+
+        router.replace(homeFor(role));
+      } catch (error) {
         setToast({
           type: "error",
-          text: "Please check your email and password.",
+          text:
+            error instanceof Error
+              ? error.message
+              : "Something went wrong. Please try again.",
         });
       }
+    },
+  });
 
-      return;
-    }
-
-    setBusy(true);
-
-    try {
-      
-      const response = await api<LoginResponse>(
-        "/api/v1/auth/login",
-        {
-          method: "POST",
-          body: {
-            email: form.email.trim(),
-            password: form.password,
-          },
-        }
-      );
-
-            if (!response.role) {
-        throw new Error("Unexpected login response from the server.");
-      }
-
-      const role = response.role.toLowerCase();
-
-      session.set({
-        user: {
-          role,
-          name: response.firstName,
-        },
-        expiresAt:
-          Date.now() + (response.expiresInSeconds || 3600) * 1000,
-      });
-      
-      router.replace(homeFor(role));
-    } catch (error) {
-      setToast({
-        type: "error",
-        text:
-          error instanceof Error
-            ? error.message
-            : "Something went wrong. Please try again.",
-      });
-
-      setBusy(false);
-    }
+  // Show an error only after the field has been touched (blurred or submitted)
+  function fieldError(field: keyof LoginValues): string | undefined {
+    return formik.touched[field] ? formik.errors[field] : undefined;
   }
 
   return (
     <main className="grid min-h-screen grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
       <Toast toast={toast} onClose={() => setToast(null)} />
 
-    
       <section className="relative flex min-h-[340px] flex-col justify-between overflow-hidden bg-[#7F1224] p-8 text-white sm:p-12 lg:min-h-screen">
         {photoOk && (
           <Image
@@ -190,10 +140,9 @@ export default function LoginPage() {
         </div>
       </section>
 
-      
       <section className="flex min-h-[500px] items-center justify-center bg-white px-6 py-12 text-[#2B0A10]">
         <form
-          onSubmit={handleSubmit}
+          onSubmit={formik.handleSubmit}
           noValidate
           className="flex w-full max-w-[440px] flex-col gap-5"
         >
@@ -207,49 +156,45 @@ export default function LoginPage() {
             </p>
           </div>
 
-        
           <label className="flex flex-col gap-2 text-sm font-semibold">
             Email
 
             <input
               type="email"
+              name="email"
               autoComplete="email"
-              value={form.email}
-              onChange={(event) =>
-                updateField("email", event.target.value)
-              }
-              aria-invalid={!!errors.email}
+              value={formik.values.email}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              aria-invalid={!!fieldError("email")}
               placeholder="Enter your email"
               className={`w-full rounded-[10px] border-2 px-3 py-3 font-normal outline-none transition focus:border-[#D7263D] ${
-                errors.email
-                  ? "border-[#B3001B]"
-                  : "border-[#CFA0A8]"
+                fieldError("email") ? "border-[#B3001B]" : "border-[#CFA0A8]"
               }`}
             />
 
-            {errors.email && (
+            {fieldError("email") && (
               <span className="text-xs font-normal text-[#B3001B]">
-                {errors.email}
+                {fieldError("email")}
               </span>
             )}
           </label>
 
-          
           <label className="flex flex-col gap-2 text-sm font-semibold">
             Password
 
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
+                name="password"
                 autoComplete="current-password"
-                value={form.password}
-                onChange={(event) =>
-                  updateField("password", event.target.value)
-                }
-                aria-invalid={!!errors.password}
+                value={formik.values.password}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                aria-invalid={!!fieldError("password")}
                 placeholder="Enter your password"
                 className={`w-full rounded-[10px] border-2 px-3 py-3 pr-16 font-normal outline-none transition focus:border-[#D7263D] ${
-                  errors.password
+                  fieldError("password")
                     ? "border-[#B3001B]"
                     : "border-[#CFA0A8]"
                 }`}
@@ -265,24 +210,23 @@ export default function LoginPage() {
               </button>
             </div>
 
-            {errors.password && (
+            {fieldError("password") && (
               <span className="text-xs font-normal text-[#B3001B]">
-                {errors.password}
+                {fieldError("password")}
               </span>
             )}
           </label>
 
-          
           <button
             type="submit"
-            disabled={busy}
+            disabled={formik.isSubmitting}
             className="mt-2 w-full rounded-[10px] bg-[#D7263D] px-5 py-3 font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#B01E31] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {busy ? "Please wait..." : "Sign in"}
+            {formik.isSubmitting ? "Please wait..." : "Sign in"}
           </button>
 
           <p className="text-center text-sm text-[#7A5A60]">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link
               href="/register"
               className="font-semibold text-[#B01E31] hover:underline"
