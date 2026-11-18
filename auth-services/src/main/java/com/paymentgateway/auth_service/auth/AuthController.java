@@ -39,11 +39,12 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    ResponseEntity<LoginResult> login(@Valid @RequestBody LoginRequest request) {
+    ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResult result = authService.login(request);
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, tokenCookie(result.token(), result.expiresInSeconds()).toString())
-                .body(result);
+                .body(result.toResponse());
+
     }
 
     @PostMapping("/logout")
@@ -60,11 +61,11 @@ public class AuthController {
 
     private ResponseCookie tokenCookie(String value, long maxAgeSeconds) {
         return ResponseCookie.from(COOKIE_NAME, value)
-                .httpOnly(true)          // page scripts cannot read it
-                .secure(cookieSecure)    // only sent over HTTPS when true
-                .sameSite("Strict")      // not sent on requests started by other sites
+                .httpOnly(true) // page scripts cannot read it
+                .secure(cookieSecure) // only sent over HTTPS when true
+                .sameSite("Strict") // not sent on requests started by other sites
                 .path("/")
-                .maxAge(maxAgeSeconds)   // 0 deletes it
+                .maxAge(maxAgeSeconds) // 0 deletes it
                 .build();
     }
 }
