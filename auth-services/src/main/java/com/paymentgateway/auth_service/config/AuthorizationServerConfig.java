@@ -14,7 +14,6 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 
-
 @Configuration
 public class AuthorizationServerConfig {
 
@@ -49,10 +48,13 @@ public class AuthorizationServerConfig {
             }
             userRepository.findByEmail(context.getPrincipal().getName()).ifPresent(user -> {
                 context.getClaims().subject(user.getId().toString());
-                if (isAccessToken) {
-                    context.getClaims().claim("role", user.getRole().name());
+             if (isAccessToken) {
+                context.getClaims().claim("role", user.getRole().name());
+            }
+            if (isIdToken) {
+                context.getClaims().claim("given_name", user.getFirstName());
+            }
                 }
-            });
+            );
         };
-    }
-}
+}}
