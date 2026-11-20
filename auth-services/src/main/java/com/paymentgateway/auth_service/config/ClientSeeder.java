@@ -40,6 +40,10 @@ public class ClientSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         RegisteredClient existing = repository.findByClientId("pesapay-web");
+        if (webSecret == null || webSecret.length() < 32) {
+            throw new IllegalStateException(
+                "WEB_CLIENT_SECRET is missing or too short (need at least 32 characters). Add it to .env.");
+        }
         String id = (existing != null) ? existing.getId() : UUID.randomUUID().toString();
 
         RegisteredClient web = RegisteredClient.withId(id)
