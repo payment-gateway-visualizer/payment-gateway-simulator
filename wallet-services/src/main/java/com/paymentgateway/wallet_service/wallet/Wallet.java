@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "wallets")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+
 public class Wallet {
 
     @Id
@@ -58,4 +59,12 @@ public class Wallet {
     void onUpdate() {
         updatedAt = Instant.now();
     }
+
+    public void credit(long amountCents) {
+    if (amountCents <= 0) {
+        throw new IllegalArgumentException("amount must be positive");
+    }
+    availableCents = Math.addExact(availableCents, amountCents);
+    }
+    
 }
