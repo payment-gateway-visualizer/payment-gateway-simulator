@@ -6,6 +6,7 @@ import Protected from "@/components/Protected";
 
 const LOGIN_PATH = "/login";
 
+
 const text = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 
 function pick(user: unknown, keys: string[]): string {
@@ -98,7 +99,6 @@ function MerchantView({ name, details }: { name: string; details: [string, strin
         <main className="pb-10 pt-6">
           <h1 className="text-3xl font-extrabold tracking-tight">Dashboard</h1>
 
-          
         
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard label="Received this month" value="KES 0.00" hint={`${monthLabel} so far`} />
@@ -141,7 +141,7 @@ function MerchantView({ name, details }: { name: string; details: [string, strin
             message="Requests you send will show up here until the customer responds."
           />
 
-        
+      
           <h2 className="mt-8 text-2xl font-extrabold tracking-tight">Transaction history</h2>
           <EmptyState
             title="No transactions yet"
@@ -152,7 +152,6 @@ function MerchantView({ name, details }: { name: string; details: [string, strin
     </div>
   );
 }
-
 
 
 export default function MerchantPage() {

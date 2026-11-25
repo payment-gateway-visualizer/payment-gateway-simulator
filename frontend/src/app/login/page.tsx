@@ -3,11 +3,15 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+<<<<<<< HEAD
 import { useRouter } from "next/navigation";
 import { useFormik } from "formik";
 import * as yup from "yup";
 
 import { api, session, homeFor, setToken } from "@/lib/api";
+=======
+
+>>>>>>> d1ef8de (Update OAuth login flow and frontend)
 import Toast, { type ToastMessage } from "@/components/Toast";
 
 interface LoginValues {
@@ -53,6 +57,7 @@ export default function LoginPage() {
       sessionStorage.removeItem("pp_flash");
       setToast({ type: "success", text: message });
     }
+<<<<<<< HEAD
   }, []);
 
   const formik = useFormik<LoginValues>({
@@ -104,6 +109,25 @@ export default function LoginPage() {
   // Show an error only after the field has been touched (blurred or submitted)
   function fieldError(field: keyof LoginValues): string | undefined {
     return formik.touched[field] ? formik.errors[field] : undefined;
+=======
+
+   
+    const error = new URLSearchParams(window.location.search).get("error");
+
+    if (error) {
+      setToast({
+        type: "error",
+        text: `Sign in failed (${error}). Please try again.`,
+      });
+    }
+  }, []);
+
+  function handleSignIn() {
+    setBusy(true);
+
+    
+    window.location.assign("/auth/start");
+>>>>>>> d1ef8de (Update OAuth login flow and frontend)
   }
 
   return (
@@ -140,13 +164,22 @@ export default function LoginPage() {
         </div>
       </section>
 
+<<<<<<< HEAD
       <section className="flex min-h-[500px] items-center justify-center bg-white px-6 py-12 text-[#2B0A10]">
         <form
           onSubmit={formik.handleSubmit}
           noValidate
           className="flex w-full max-w-[440px] flex-col gap-5"
         >
+=======
+      <section className="flex min-h-[500px] items-start justify-center bg-white px-6 pb-12 pt-16 text-[#2B0A10] lg:pt-24">
+        <div className="flex w-full max-w-[440px] flex-col gap-5">
+>>>>>>> d1ef8de (Update OAuth login flow and frontend)
           <div>
+            <div className="mb-4 text-2xl font-extrabold tracking-tight text-[#7F1224] [font-family:var(--head)]">
+              Pesa<span className="text-[#D7263D]">Pay</span>
+            </div>
+
             <h1 className="text-3xl font-bold tracking-tight [font-family:var(--head)]">
               Log in
             </h1>

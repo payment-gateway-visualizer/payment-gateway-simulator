@@ -28,7 +28,7 @@ function getDisplayName(user: unknown): string {
   return email ? email.split("@")[0] : "Customer";
 }
 
-/** The account details  */
+
 function getDetails(user: unknown, name: string): [string, string][] {
   const rows: [string, string][] = [
     ["Name", name],
