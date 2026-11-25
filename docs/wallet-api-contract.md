@@ -6,7 +6,7 @@ While an endpoint's status is **STUB**, the service returns fixed sample data in
 
 ## Rules that apply to every endpoint
 
-- **Login first.** Get a token from the auth service (`POST http://localhost:8081/api/v1/auth/login`) and send it on every call: `Authorization: Bearer <token>`.
+- **Login first.** Log in through the website's Sign in button (authorization-code flow, see `api-contract.md`). Send the access token on every call, either as `Authorization: Bearer <token>` or in the `pp_token` cookie. The browser sends the cookie by itself when the website uses `credentials: "include"`.
 - **401** = no token, a bad token, or an expired token. **403** = valid token, but your role isn't allowed here (`{"error": "FORBIDDEN"}`).
 - **Money** is always a whole number of cents in `amountCents`. KES 250.00 is `25000`. The currency is always KES.
 - **Ids** are text (UUIDs). **Times** are ISO-8601 in UTC, like `2026-11-11T09:30:00Z`.
@@ -17,8 +17,8 @@ While an endpoint's status is **STUB**, the service returns fixed sample data in
 
 | Endpoint | Who | Purpose | Status |
 |---|---|---|---|
-| `GET /wallets/me` | customer, merchant | My balances | STUB |
-| `POST /wallets/me/top-up` | customer | Add mock money | STUB |
+| `GET /wallets/me` | customer, merchant | My balances | LIVE |
+| `POST /wallets/me/top-up` | customer | Add mock money | LIVE |
 | `POST /payment-requests` | merchant | Ask a customer to pay | STUB |
 | `GET /payment-requests` | customer, merchant | My requests (`?status=` optional) | STUB |
 | `POST /payment-requests/{id}/approve` | customer | Pay a request | STUB |
@@ -128,4 +128,5 @@ The tiles depend on the role in your token.
 
 - `CUSTOMER_NOT_FOUND` lets a merchant learn whether an email or phone is registered.
 - Top-up is unlimited, because it is mock money.
+- A refused role (403) or a missing or expired token (401) currently returns an empty body, not `{"error": "FORBIDDEN"}`. This will be fixed.
 - Lists have no paging yet.
