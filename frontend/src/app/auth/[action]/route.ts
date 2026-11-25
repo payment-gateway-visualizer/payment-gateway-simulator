@@ -52,7 +52,7 @@ const clearSession = (res: NextResponse) => {
   cookie(res, "pp_refresh", "", "/auth", 0);
 };
 
-// POST a form to the authorization server using the client credentials
+
 function post(path: string, body: Record<string, string>) {
   const basic = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64");
 

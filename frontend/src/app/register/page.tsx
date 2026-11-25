@@ -114,7 +114,7 @@ export default function RegisterPage() {
     },
   });
 
-  // Show an error only after the field has been touched (blurred or submitted)
+ 
   function fieldError(field: keyof RegisterValues): string | undefined {
     return formik.touched[field] ? formik.errors[field] : undefined;
   }

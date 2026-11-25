@@ -1,117 +1,17 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-<<<<<<< HEAD
-import { useRouter } from "next/navigation";
-import { useFormik } from "formik";
-import * as yup from "yup";
-
-import { api, session, homeFor, setToken } from "@/lib/api";
-=======
-
->>>>>>> d1ef8de (Update OAuth login flow and frontend)
 import Toast, { type ToastMessage } from "@/components/Toast";
 
-interface LoginValues {
-  email: string;
-  password: string;
-}
-
-interface LoginResponse {
-  token: string;
-  role: string;
-  firstName?: string;
-  expiresInSeconds?: number;
-}
-
-const initialValues: LoginValues = {
-  email: "",
-  password: "",
-};
-
-// Login only checks that the fields are filled in. The password strength
-// rules belong on the register page, not here.
-const loginSchema: yup.ObjectSchema<LoginValues> = yup.object({
-  email: yup
-    .string()
-    .trim()
-    .email("Enter a valid email address")
-    .required("Email is required"),
-
-  password: yup.string().required("Password is required"),
-});
-
 export default function LoginPage() {
-  const router = useRouter();
-
   const [toast, setToast] = useState<ToastMessage | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [photoOk, setPhotoOk] = useState(true);
 
   useEffect(() => {
-    const message = sessionStorage.getItem("pp_flash");
-
-    if (message) {
-      sessionStorage.removeItem("pp_flash");
-      setToast({ type: "success", text: message });
-    }
-<<<<<<< HEAD
-  }, []);
-
-  const formik = useFormik<LoginValues>({
-    initialValues,
-    validationSchema: loginSchema,
-    validateOnChange: true,
-    validateOnBlur: true,
-    onSubmit: async (values) => {
-      try {
-        const response = await api<LoginResponse>("/api/v1/auth/login", {
-          method: "POST",
-          auth: false,
-          body: {
-            email: values.email.trim(),
-            password: values.password,
-          },
-        });
-
-        if (!response.role || !response.token) {
-          throw new Error("Unexpected login response from the server.");
-        }
-
-        const role = response.role.toLowerCase();
-
-        setToken(response.token);
-
-        session.set({
-          user: {
-            role,
-            name: response.firstName,
-          },
-          expiresAt:
-            Date.now() + (response.expiresInSeconds || 3600) * 1000,
-        });
-
-        router.replace(homeFor(role));
-      } catch (error) {
-        setToast({
-          type: "error",
-          text:
-            error instanceof Error
-              ? error.message
-              : "Something went wrong. Please try again.",
-        });
-      }
-    },
-  });
-
-  // Show an error only after the field has been touched (blurred or submitted)
-  function fieldError(field: keyof LoginValues): string | undefined {
-    return formik.touched[field] ? formik.errors[field] : undefined;
-=======
-
-   
     const error = new URLSearchParams(window.location.search).get("error");
 
     if (error) {
@@ -124,10 +24,7 @@ export default function LoginPage() {
 
   function handleSignIn() {
     setBusy(true);
-
-    
     window.location.assign("/auth/start");
->>>>>>> d1ef8de (Update OAuth login flow and frontend)
   }
 
   return (
@@ -164,17 +61,8 @@ export default function LoginPage() {
         </div>
       </section>
 
-<<<<<<< HEAD
-      <section className="flex min-h-[500px] items-center justify-center bg-white px-6 py-12 text-[#2B0A10]">
-        <form
-          onSubmit={formik.handleSubmit}
-          noValidate
-          className="flex w-full max-w-[440px] flex-col gap-5"
-        >
-=======
       <section className="flex min-h-[500px] items-start justify-center bg-white px-6 pb-12 pt-16 text-[#2B0A10] lg:pt-24">
         <div className="flex w-full max-w-[440px] flex-col gap-5">
->>>>>>> d1ef8de (Update OAuth login flow and frontend)
           <div>
             <div className="mb-4 text-2xl font-extrabold tracking-tight text-[#7F1224] [font-family:var(--head)]">
               Pesa<span className="text-[#D7263D]">Pay</span>
@@ -189,73 +77,13 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <label className="flex flex-col gap-2 text-sm font-semibold">
-            Email
-
-            <input
-              type="email"
-              name="email"
-              autoComplete="email"
-              value={formik.values.email}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              aria-invalid={!!fieldError("email")}
-              placeholder="Enter your email"
-              className={`w-full rounded-[10px] border-2 px-3 py-3 font-normal outline-none transition focus:border-[#D7263D] ${
-                fieldError("email") ? "border-[#B3001B]" : "border-[#CFA0A8]"
-              }`}
-            />
-
-            {fieldError("email") && (
-              <span className="text-xs font-normal text-[#B3001B]">
-                {fieldError("email")}
-              </span>
-            )}
-          </label>
-
-          <label className="flex flex-col gap-2 text-sm font-semibold">
-            Password
-
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                autoComplete="current-password"
-                value={formik.values.password}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                aria-invalid={!!fieldError("password")}
-                placeholder="Enter your password"
-                className={`w-full rounded-[10px] border-2 px-3 py-3 pr-16 font-normal outline-none transition focus:border-[#D7263D] ${
-                  fieldError("password")
-                    ? "border-[#B3001B]"
-                    : "border-[#CFA0A8]"
-                }`}
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-pressed={showPassword}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#B01E31]"
-              >
-                {showPassword ? "Hide" : "Show"}
-              </button>
-            </div>
-
-            {fieldError("password") && (
-              <span className="text-xs font-normal text-[#B3001B]">
-                {fieldError("password")}
-              </span>
-            )}
-          </label>
-
           <button
-            type="submit"
-            disabled={formik.isSubmitting}
+            type="button"
+            onClick={handleSignIn}
+            disabled={busy}
             className="mt-2 w-full rounded-[10px] bg-[#D7263D] px-5 py-3 font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#B01E31] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {formik.isSubmitting ? "Please wait..." : "Sign in"}
+            {busy ? "Redirecting..." : "Sign in"}
           </button>
 
           <p className="text-center text-sm text-[#7A5A60]">
@@ -267,7 +95,7 @@ export default function LoginPage() {
               Sign up
             </Link>
           </p>
-        </form>
+        </div>
       </section>
     </main>
   );
