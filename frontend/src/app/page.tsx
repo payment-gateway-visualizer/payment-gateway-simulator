@@ -1,11 +1,5 @@
-"use client";
-
-import Protected from "@/components/Protected";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return (
-    <Protected role="customer">
-      {() => null}
-    </Protected>
-  );
+  redirect("/login");
 }

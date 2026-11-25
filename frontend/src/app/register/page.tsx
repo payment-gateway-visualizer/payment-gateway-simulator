@@ -1,10 +1,10 @@
-
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useFormik } from "formik";
 import * as yup from "yup";
 
 import { api } from "@/lib/api";
@@ -19,6 +19,16 @@ interface RegisterValues {
   password: string;
   confirm: string;
 }
+
+const initialValues: RegisterValues = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  role: "",
+  password: "",
+  confirm: "",
+};
 
 const registerSchema: yup.ObjectSchema<RegisterValues> = yup.object({
   firstName: yup.string().trim().required("First name is required"),
@@ -38,125 +48,75 @@ const registerSchema: yup.ObjectSchema<RegisterValues> = yup.object({
       "valid-phone",
       "Enter a valid number, e.g. +254 712 345 678",
       (value) =>
-        !!value &&
-        /^\+?\d{9,15}$/.test(value.replace(/[\s-]/g, ""))
+        !!value && /^\+?\d{9,15}$/.test(value.replace(/[\s-]/g, ""))
     ),
 
   role: yup
     .string()
-    .oneOf(["CUSTOMER", "MERCHANT"], "Choose a valid role")
-    .required("Please choose your role"),
+    .required("Please choose your role")
+    .oneOf(["CUSTOMER", "MERCHANT"], "Choose a valid role"),
 
   password: yup
     .string()
+    .required("Password is required")
     .min(8, "Password must have at least 8 characters")
-    .matches(/[A-Za-z]/, "Password must contain a letter")
+    .matches(/[a-z]/, "Password must contain a lowercase letter")
+    .matches(/[A-Z]/, "Password must contain an uppercase letter")
     .matches(/\d/, "Password must contain a number")
-    .required("Password is required"),
+    .matches(/[^A-Za-z0-9]/, "Password must contain a special character"),
 
   confirm: yup
     .string()
-    .oneOf([yup.ref("password")], "Passwords don't match")
-    .required("Please confirm your password"),
+    .required("Please confirm your password")
+    .oneOf([yup.ref("password")], "Passwords don't match"),
 });
 
 export default function RegisterPage() {
   const router = useRouter();
 
-  const [form, setForm] = useState<RegisterValues>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    role: "",
-    password: "",
-    confirm: "",
-  });
-
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof RegisterValues, string>>
-  >({});
-
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [busy, setBusy] = useState(false);
 
-  function updateField(field: keyof RegisterValues, value: string) {
-    setForm((previous) => ({
-      ...previous,
-      [field]: value,
-    }));
-
-    setErrors((previous) => ({
-      ...previous,
-      [field]: undefined,
-    }));
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setErrors({});
-
-    try {
-      await registerSchema.validate(form, { abortEarly: false });
-    } catch (error) {
-      if (error instanceof yup.ValidationError) {
-        const fieldErrors: Partial<
-          Record<keyof RegisterValues, string>
-        > = {};
-
-        error.inner.forEach((item) => {
-          if (
-            item.path &&
-            item.path in form &&
-            !fieldErrors[item.path as keyof RegisterValues]
-          ) {
-            fieldErrors[item.path as keyof RegisterValues] = item.message;
-          }
+  const formik = useFormik<RegisterValues>({
+    initialValues,
+    validationSchema: registerSchema,
+    validateOnChange: true,
+    validateOnBlur: true,
+    onSubmit: async (values) => {
+      try {
+        await api("/api/v1/auth/register", {
+          method: "POST",
+          body: {
+            firstName: values.firstName.trim(),
+            lastName: values.lastName.trim(),
+            email: values.email.trim(),
+            phone: values.phone.trim(),
+            role: values.role,
+            password: values.password,
+          },
         });
 
-        setErrors(fieldErrors);
+        sessionStorage.setItem(
+          "pp_flash",
+          "Account created! Please sign in with your email and password."
+        );
+
+        router.push("/login");
+      } catch (error) {
         setToast({
           type: "error",
-          text: "Please check the details you entered.",
+          text:
+            error instanceof Error
+              ? error.message
+              : "Registration failed. Please try again.",
         });
       }
+    },
+  });
 
-      return;
-    }
-
-    setBusy(true);
-
-    try {
-      await api("/api/v1/auth/register", {
-        method: "POST",
-        body: {
-          firstName: form.firstName.trim(),
-          lastName: form.lastName.trim(),
-          email: form.email.trim(),
-          phone: form.phone.trim(),
-          role: form.role,
-          password: form.password,
-        },
-      });
-
-      sessionStorage.setItem(
-        "pp_flash",
-        "Account created! Please sign in with your email and password."
-      );
-
-      router.push("/login");
-    } catch (error) {
-      setToast({
-        type: "error",
-        text:
-          error instanceof Error
-            ? error.message
-            : "Registration failed. Please try again.",
-      });
-
-      setBusy(false);
-    }
+ 
+  function fieldError(field: keyof RegisterValues): string | undefined {
+    return formik.touched[field] ? formik.errors[field] : undefined;
   }
 
   const inputClass =
@@ -194,23 +154,27 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
+        <form
+          onSubmit={formik.handleSubmit}
+          noValidate
+          className="flex flex-col gap-5"
+        >
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <label className="flex flex-col gap-2 text-sm font-semibold">
               First name
               <input
                 type="text"
+                name="firstName"
                 autoComplete="given-name"
                 placeholder="Jane"
-                value={form.firstName}
-                onChange={(event) =>
-                  updateField("firstName", event.target.value)
-                }
-                aria-invalid={!!errors.firstName}
+                value={formik.values.firstName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                aria-invalid={!!fieldError("firstName")}
                 className={inputClass}
               />
-              {errors.firstName && (
-                <span className={errorClass}>{errors.firstName}</span>
+              {fieldError("firstName") && (
+                <span className={errorClass}>{fieldError("firstName")}</span>
               )}
             </label>
 
@@ -218,17 +182,17 @@ export default function RegisterPage() {
               Last name
               <input
                 type="text"
+                name="lastName"
                 autoComplete="family-name"
                 placeholder="Doe"
-                value={form.lastName}
-                onChange={(event) =>
-                  updateField("lastName", event.target.value)
-                }
-                aria-invalid={!!errors.lastName}
+                value={formik.values.lastName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                aria-invalid={!!fieldError("lastName")}
                 className={inputClass}
               />
-              {errors.lastName && (
-                <span className={errorClass}>{errors.lastName}</span>
+              {fieldError("lastName") && (
+                <span className={errorClass}>{fieldError("lastName")}</span>
               )}
             </label>
           </div>
@@ -237,17 +201,17 @@ export default function RegisterPage() {
             Email
             <input
               type="email"
+              name="email"
               autoComplete="email"
               placeholder="Enter your email"
-              value={form.email}
-              onChange={(event) =>
-                updateField("email", event.target.value)
-              }
-              aria-invalid={!!errors.email}
+              value={formik.values.email}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              aria-invalid={!!fieldError("email")}
               className={inputClass}
             />
-            {errors.email && (
-              <span className={errorClass}>{errors.email}</span>
+            {fieldError("email") && (
+              <span className={errorClass}>{fieldError("email")}</span>
             )}
           </label>
 
@@ -255,36 +219,36 @@ export default function RegisterPage() {
             Phone number
             <input
               type="tel"
+              name="phone"
               autoComplete="tel"
               placeholder="+254 712 345 678"
-              value={form.phone}
-              onChange={(event) =>
-                updateField("phone", event.target.value)
-              }
-              aria-invalid={!!errors.phone}
+              value={formik.values.phone}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              aria-invalid={!!fieldError("phone")}
               className={inputClass}
             />
-            {errors.phone && (
-              <span className={errorClass}>{errors.phone}</span>
+            {fieldError("phone") && (
+              <span className={errorClass}>{fieldError("phone")}</span>
             )}
           </label>
 
           <label className="flex flex-col gap-2 text-sm font-semibold">
             Role
             <select
-              value={form.role}
-              onChange={(event) =>
-                updateField("role", event.target.value)
-              }
-              aria-invalid={!!errors.role}
+              name="role"
+              value={formik.values.role}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              aria-invalid={!!fieldError("role")}
               className={inputClass}
             >
               <option value="">Choose your role</option>
               <option value="CUSTOMER">Customer</option>
               <option value="MERCHANT">Merchant</option>
             </select>
-            {errors.role && (
-              <span className={errorClass}>{errors.role}</span>
+            {fieldError("role") && (
+              <span className={errorClass}>{fieldError("role")}</span>
             )}
           </label>
 
@@ -293,13 +257,13 @@ export default function RegisterPage() {
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
+                name="password"
                 autoComplete="new-password"
                 placeholder="Create a password"
-                value={form.password}
-                onChange={(event) =>
-                  updateField("password", event.target.value)
-                }
-                aria-invalid={!!errors.password}
+                value={formik.values.password}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                aria-invalid={!!fieldError("password")}
                 className={`${inputClass} pr-16`}
               />
 
@@ -312,8 +276,8 @@ export default function RegisterPage() {
                 {showPassword ? "Hide" : "Show"}
               </button>
             </div>
-            {errors.password && (
-              <span className={errorClass}>{errors.password}</span>
+            {fieldError("password") && (
+              <span className={errorClass}>{fieldError("password")}</span>
             )}
           </label>
 
@@ -321,26 +285,26 @@ export default function RegisterPage() {
             Confirm password
             <input
               type={showPassword ? "text" : "password"}
+              name="confirm"
               autoComplete="new-password"
               placeholder="Enter your password again"
-              value={form.confirm}
-              onChange={(event) =>
-                updateField("confirm", event.target.value)
-              }
-              aria-invalid={!!errors.confirm}
+              value={formik.values.confirm}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              aria-invalid={!!fieldError("confirm")}
               className={inputClass}
             />
-            {errors.confirm && (
-              <span className={errorClass}>{errors.confirm}</span>
+            {fieldError("confirm") && (
+              <span className={errorClass}>{fieldError("confirm")}</span>
             )}
           </label>
 
           <button
             type="submit"
-            disabled={busy}
+            disabled={formik.isSubmitting}
             className="mt-2 w-full rounded-[10px] bg-[#D7263D] px-5 py-3 font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#B01E31] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {busy ? "Please wait..." : "Create account"}
+            {formik.isSubmitting ? "Please wait..." : "Create account"}
           </button>
 
           <p className="text-center text-sm text-[#7A5A60]">
