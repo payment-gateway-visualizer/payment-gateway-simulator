@@ -1,9 +1,9 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+
 import Toast, { type ToastMessage } from "@/components/Toast";
 
 export default function LoginPage() {
@@ -19,19 +19,22 @@ export default function LoginPage() {
       setToast({ type: "success", text: message });
     }
 
-    const params = new URLSearchParams(window.location.search);
+   
+    const error = new URLSearchParams(window.location.search).get("error");
 
-    if (params.has("error")) {
+    if (error) {
       setToast({
         type: "error",
-        text: "Sign in could not be completed. Please try again.",
+        text: `Sign in failed (${error}). Please try again.`,
       });
     }
   }, []);
 
   function handleSignIn() {
     setBusy(true);
-    window.location.href = "/auth/start";
+
+    
+    window.location.assign("/auth/start");
   }
 
   return (
@@ -68,9 +71,13 @@ export default function LoginPage() {
         </div>
       </section>
 
-      <section className="flex min-h-[500px] items-center justify-center bg-white px-6 py-12 text-[#2B0A10]">
+      <section className="flex min-h-[500px] items-start justify-center bg-white px-6 pb-12 pt-16 text-[#2B0A10] lg:pt-24">
         <div className="flex w-full max-w-[440px] flex-col gap-5">
           <div>
+            <div className="mb-4 text-2xl font-extrabold tracking-tight text-[#7F1224] [font-family:var(--head)]">
+              Pesa<span className="text-[#D7263D]">Pay</span>
+            </div>
+
             <h1 className="text-3xl font-bold tracking-tight [font-family:var(--head)]">
               Log in
             </h1>

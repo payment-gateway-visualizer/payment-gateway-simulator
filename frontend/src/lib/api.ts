@@ -45,11 +45,7 @@ export const session = {
   // Also asks the server to expire the cookie, so logout really logs out.
   clear(): void {
     localStorage.removeItem("pp_session");
-    fetch(BASE + "/api/v1/auth/logout", {
-      method: "POST",
-      credentials: "include",
-      keepalive: true,
-    }).catch(() => {});
+    fetch("/auth/logout", { method: "POST", keepalive: true }).catch(() => {});
   },
 };
 

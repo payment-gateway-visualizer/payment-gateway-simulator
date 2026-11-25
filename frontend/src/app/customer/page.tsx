@@ -6,11 +6,9 @@ import Protected from "@/components/Protected";
 
 const LOGIN_PATH = "/login";
 
-
-
 const text = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 
-/** Reads the first non-empty text field from the logged-in user. */
+
 function pick(user: unknown, keys: string[]): string {
   if (user && typeof user === "object") {
     const u = user as Record<string, unknown>;
@@ -30,7 +28,7 @@ function getDisplayName(user: unknown): string {
   return email ? email.split("@")[0] : "Customer";
 }
 
-/** The account details  */
+
 function getDetails(user: unknown, name: string): [string, string][] {
   const rows: [string, string][] = [
     ["Name", name],
