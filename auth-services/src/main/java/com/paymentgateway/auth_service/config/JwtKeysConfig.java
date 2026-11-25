@@ -11,6 +11,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.security.converter.RsaKeyConverters;
 
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
+
 @Configuration
 public class JwtKeysConfig {
 
@@ -26,5 +32,17 @@ public class JwtKeysConfig {
         try (InputStream in = file.getInputStream()) {
             return RsaKeyConverters.x509().convert(in);
         }
+    }
+
+    // The signing keys, in the form the authorization server expects.
+    // Same files and same key id on every start and in every copy of auth.
+    @Bean
+    JWKSource<SecurityContext> jwkSource(RSAPublicKey publicKey, RSAPrivateKey privateKey,
+            @Value("${app.jwt.key-id:pesapay-key-1}") String keyId) {
+        RSAKey rsaKey = new RSAKey.Builder(publicKey)
+                .privateKey(privateKey)
+                .keyID(keyId)
+                .build();
+        return new ImmutableJWKSet<>(new JWKSet(rsaKey));
     }
 }

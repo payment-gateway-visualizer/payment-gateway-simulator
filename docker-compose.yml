@@ -30,6 +30,7 @@ services:
       JWT_PUBLIC_KEY_PATH: file:/keys/public.pem
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      WEB_CLIENT_SECRET: ${WEB_CLIENT_SECRET}
     volumes:
       - ./keys:/keys:ro
     ports:

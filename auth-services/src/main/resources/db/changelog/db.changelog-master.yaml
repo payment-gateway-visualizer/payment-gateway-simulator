@@ -1,3 +1,5 @@
 databaseChangeLog:
   - include:
       file: db/changelog/changes/001-create-users-table.sql
+  - include:
+      file: db/changelog/changes/002-create-oauth2-authorization-server-tables.sql    
