@@ -19,7 +19,7 @@ export default function Protected({ role, children }: ProtectedProps) {
     async function load() {
       let response = await fetch("/auth/me");
 
-      // Access token expired: try the refresh token once
+      
       if (response.status === 401) {
         const refreshed = await fetch("/auth/refresh", { method: "POST" });
 

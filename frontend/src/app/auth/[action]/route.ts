@@ -15,6 +15,7 @@ interface Tokens {
   access_token: string;
   refresh_token: string;
   expires_in: number;
+  id_token?: string;
 }
 
 type Context = { params: Promise<{ action: string }> };
@@ -50,9 +51,10 @@ const setSession = (res: NextResponse, t: Tokens) => {
 const clearSession = (res: NextResponse) => {
   cookie(res, "pp_token", "", "/", 0);
   cookie(res, "pp_refresh", "", "/auth", 0);
+  cookie(res, "pp_name", "", "/", 0);
 };
 
-// POST a form to the authorization server using the client credentials
+
 function post(path: string, body: Record<string, string>) {
   const basic = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64");
 
@@ -71,11 +73,16 @@ async function readTokens(res: Response): Promise<Tokens | null> {
   const t = (await res.json()) as Partial<Tokens>;
 
   return t.access_token && t.refresh_token && t.expires_in
-    ? { access_token: t.access_token, refresh_token: t.refresh_token, expires_in: t.expires_in }
+    ? {
+        access_token: t.access_token,
+        refresh_token: t.refresh_token,
+        expires_in: t.expires_in,
+        id_token: t.id_token,
+      }
     : null;
 }
 
-// Read the claims inside a JWT payload
+
 const claims = (token: string) =>
   JSON.parse(Buffer.from(token.split(".")[1], "base64url").toString()) as {
     role?: string;
@@ -144,9 +151,11 @@ export async function GET(request: NextRequest, { params }: Context) {
     if (!tokens) return fail("Invalid token response.", 502);
 
     const { role } = claims(tokens.access_token);
+    const name = tokens.id_token ? claims(tokens.id_token).given_name : undefined;
 
     const res = NextResponse.redirect(new URL(HOME[role ?? ""] ?? "/login", request.url));
     setSession(res, tokens);
+    if (name) cookie(res, "pp_name", name, "/", 7 * 24 * 60 * 60);
     cookie(res, "pp_verifier", "", "/auth", 0, "lax");
     cookie(res, "pp_state", "", "/auth", 0, "lax");
     return res;
@@ -157,8 +166,11 @@ export async function GET(request: NextRequest, { params }: Context) {
     const token = request.cookies.get("pp_token")?.value;
     if (!token) return fail("Not signed in.", 401);
 
-    const { role, given_name } = claims(token);
-    return NextResponse.json({ role: (role ?? "").toLowerCase(), name: given_name });
+    const { role } = claims(token);
+    return NextResponse.json({
+      role: (role ?? "").toLowerCase(),
+      name: request.cookies.get("pp_name")?.value,
+    });
   }
 
   return fail("Not found", 404);

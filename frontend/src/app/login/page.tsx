@@ -1,9 +1,9 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-
 import Toast, { type ToastMessage } from "@/components/Toast";
 
 export default function LoginPage() {
@@ -19,7 +19,6 @@ export default function LoginPage() {
       setToast({ type: "success", text: message });
     }
 
-   
     const error = new URLSearchParams(window.location.search).get("error");
 
     if (error) {
@@ -32,8 +31,6 @@ export default function LoginPage() {
 
   function handleSignIn() {
     setBusy(true);
-
-    
     window.location.assign("/auth/start");
   }
 
