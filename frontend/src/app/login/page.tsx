@@ -12,6 +12,13 @@ export default function LoginPage() {
   const [photoOk, setPhotoOk] = useState(true);
 
   useEffect(() => {
+    const message = sessionStorage.getItem("pp_flash");
+
+    if (message) {
+      sessionStorage.removeItem("pp_flash");
+      setToast({ type: "success", text: message });
+    }
+
     const error = new URLSearchParams(window.location.search).get("error");
 
     if (error) {
@@ -73,7 +80,7 @@ export default function LoginPage() {
             </h1>
 
             <p className="mt-2 text-sm text-[#7A5A60]">
-              Welcome back. Enter your details.
+              Welcome back. Sign in to continue.
             </p>
           </div>
 
@@ -87,7 +94,7 @@ export default function LoginPage() {
           </button>
 
           <p className="text-center text-sm text-[#7A5A60]">
-            Don&apos;t have an account?{" "}
+            Don't have an account?{" "}
             <Link
               href="/register"
               className="font-semibold text-[#B01E31] hover:underline"
