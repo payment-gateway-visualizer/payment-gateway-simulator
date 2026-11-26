@@ -12,6 +12,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByEmail(String email);
 
     boolean existsByPhone(String phone);
+
+    Optional<User> findByPhone(String phone);
 }
 
 //this is a Spring Data JPA repository interface for the User entity. It provides methods to perform CRUD operations and custom queries on the users table, such as finding a user by email and checking if a user exists by email or phone.    
