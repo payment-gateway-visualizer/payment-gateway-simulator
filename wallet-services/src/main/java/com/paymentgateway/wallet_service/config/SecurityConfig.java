@@ -36,6 +36,10 @@ public class SecurityConfig {
                         .hasAnyRole("CUSTOMER", "MERCHANT")
                         .requestMatchers(HttpMethod.POST, "/api/v1/wallets/me/top-up")
                         .hasRole("CUSTOMER")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/payment-requests")
+                        .hasRole("MERCHANT")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/payment-requests")
+                        .hasAnyRole("CUSTOMER", "MERCHANT")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .bearerTokenResolver(tokenResolver)
