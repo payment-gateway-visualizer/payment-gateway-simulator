@@ -36,7 +36,6 @@ public class AuthorizationServerConfig {
             RegisteredClientRepository registeredClientRepository) {
         return new JdbcOAuth2AuthorizationConsentService(jdbcTemplate, registeredClientRepository);
     }
-
     @Bean
     OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer(UserRepository userRepository) {
         return context -> {
@@ -48,13 +47,14 @@ public class AuthorizationServerConfig {
             }
             userRepository.findByEmail(context.getPrincipal().getName()).ifPresent(user -> {
                 context.getClaims().subject(user.getId().toString());
-             if (isAccessToken) {
-                context.getClaims().claim("role", user.getRole().name());
-            }
-            if (isIdToken) {
-                context.getClaims().claim("given_name", user.getFirstName());
-            }
+                if (isAccessToken) {
+                    context.getClaims().claim("role", user.getRole().name());
+                    context.getClaims().claim("name", user.getFirstName() + " " + user.getLastName());
                 }
-            );
+                if (isIdToken) {
+                    context.getClaims().claim("given_name", user.getFirstName());
+                }
+            });
         };
-}}
+    }
+}
