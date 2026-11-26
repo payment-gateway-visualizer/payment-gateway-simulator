@@ -1,6 +1,9 @@
 const BASE =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
 
+export const WALLET_BASE =
+  process.env.NEXT_PUBLIC_WALLET_URL || "http://localhost:8082";
+
 const MESSAGES: Record<string, string> = {
   EMAIL_TAKEN: "That email is already registered. Try signing in.",
   PHONE_TAKEN: "That phone number is already in use.",
@@ -40,10 +43,10 @@ export const session = {
     localStorage.setItem("pp_session", JSON.stringify(value));
   },
 
-  
-  clear(): void {
+  // Waits for the server to revoke the refresh token and clear the cookies.
+  async clear(): Promise<void> {
     localStorage.removeItem("pp_session");
-    fetch("/auth/logout", { method: "POST", keepalive: true }).catch(() => {});
+    await fetch("/auth/logout", { method: "POST" }).catch(() => {});
   },
 };
 
@@ -53,16 +56,17 @@ export const homeFor = (role?: string | null): string =>
 interface ApiOptions {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
+  base?: string; // which server to call; defaults to the auth server
 }
 
 export async function api<T = unknown>(
   path: string,
-  { method = "GET", body }: ApiOptions = {}
+  { method = "GET", body, base = BASE }: ApiOptions = {}
 ): Promise<T> {
   let response: Response;
 
   try {
-    response = await fetch(BASE + path, {
+    response = await fetch(base + path, {
       method,
       credentials: "include", // browser attaches the pp_token cookie
       headers: { "Content-Type": "application/json" },
@@ -70,7 +74,7 @@ export async function api<T = unknown>(
     });
   } catch {
     throw new Error(
-      "Can't reach the server. Is the API running on " + BASE + "?"
+      "Can't reach the server. Is the API running on " + base + "?"
     );
   }
 

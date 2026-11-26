@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import Protected from "@/components/Protected";
+import { session } from "@/lib/api";
+
 
 
 const LOGIN_PATH = "/login";
@@ -68,7 +70,10 @@ function MerchantView({ name, details }: { name: string; details: [string, strin
   const router = useRouter();
 
  
-  const onLogout = () => router.replace(LOGIN_PATH);
+  const onLogout = async () => {
+  await session.clear();
+  router.replace(LOGIN_PATH);
+};
 
   const monthLabel = new Date().toLocaleDateString("en-GB", { month: "short", year: "numeric" });
 
